@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerAutomation v0.56 - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #3b82f6 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .workflow-node {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .workflow-node:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+        .workflow-node.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        .connection-line {
+            stroke: #6b7280;
+            stroke-width: 2;
+            fill: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 頂部導航 -->
+    <nav class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold">PowerAutomation v0.56</h1>
+                    </div>
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#dashboard" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">儀表板</a>
+                        <a href="#workflow" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">工作流</a>
+                        <a href="#intervention" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">智能介入</a>
+                        <a href="#monitoring" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">監控</a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <div class="flex items-center space-x-2">
+                        <div class="pulse-dot w-3 h-3 bg-green-400 rounded-full"></div>
+                        <span class="text-sm">Kilo Code引擎運行中</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要內容 -->
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- 統計卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white overflow-hidden shadow rounded-lg card-hover">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-robot text-blue-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">智能介入次數</dt>
+                                <dd class="text-lg font-medium text-gray-900" id="total-interventions">0</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow rounded-lg card-hover">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-play-circle text-green-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">成功工作流</dt>
+                                <dd class="text-lg font-medium text-gray-900" id="successful-workflows">0</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow rounded-lg card-hover">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-coins text-yellow-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Token節省</dt>
+                                <dd class="text-lg font-medium text-gray-900" id="tokens-saved">0</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow rounded-lg card-hover">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-dollar-sign text-red-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">成本節省</dt>
+                                <dd class="text-lg font-medium text-gray-900" id="cost-saved">$0.00</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主要功能區域 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- 一鍵錄製工作流 -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+                        <i class="fas fa-record-vinyl text-red-500 mr-2"></i>
+                        一鍵錄製工作流
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">工作流名稱</label>
+                            <input type="text" id="workflow-name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="輸入工作流名稱">
+                        </div>
+                        
+                        <div class="flex space-x-3">
+                            <button id="start-recording" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-200">
+                                <i class="fas fa-play mr-2"></i>開始錄製
+                            </button>
+                            <button id="stop-recording" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition duration-200" disabled>
+                                <i class="fas fa-stop mr-2"></i>停止錄製
+                            </button>
+                        </div>
+                        
+                        <div id="recording-status" class="text-sm text-gray-600 hidden">
+                            <i class="fas fa-circle text-red-500 mr-2 pulse-dot"></i>
+                            正在錄製中...
+                        </div>
+                        
+                        <div id="recorded-actions" class="mt-4 space-y-2 max-h-40 overflow-y-auto hidden">
+                            <h4 class="text-sm font-medium text-gray-700">錄製的動作:</h4>
+                            <div id="actions-list" class="space-y-1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 智能介入監控 -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+                        <i class="fas fa-brain text-purple-500 mr-2"></i>
+                        智能介入監控
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">對話內容分析</label>
+                            <textarea id="conversation-input" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" rows="3" placeholder="輸入對話內容進行分析..."></textarea>
+                        </div>
+                        
+                        <button id="analyze-conversation" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-200">
+                            <i class="fas fa-search mr-2"></i>分析對話
+                        </button>
+                        
+                        <div id="analysis-result" class="hidden">
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <h4 class="text-sm font-medium text-gray-700 mb-2">分析結果:</h4>
+                                <div id="intervention-needed" class="text-sm"></div>
+                                <div id="confidence-score" class="text-sm"></div>
+                                <div id="suggested-action" class="text-sm"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 工作流可視化編輯器 -->
+        <div class="mt-8 bg-white shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+                    <i class="fas fa-project-diagram text-blue-500 mr-2"></i>
+                    n8n型態工作流編輯器
+                </h3>
+                
+                <div id="workflow-editor" class="border-2 border-dashed border-gray-300 rounded-lg h-96 p-4 overflow-auto">
+                    <div class="text-center text-gray-500 mt-20">
+                        <i class="fas fa-plus-circle text-4xl mb-4"></i>
+                        <p>錄製工作流後將在此顯示可視化編輯器</p>
+                        <p class="text-sm">支持拖拽編輯、變量設置和條件邏輯</p>
+                    </div>
+                </div>
+                
+                <div class="mt-4 flex space-x-3">
+                    <button id="edit-workflow" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-200" disabled>
+                        <i class="fas fa-edit mr-2"></i>編輯工作流
+                    </button>
+                    <button id="execute-workflow" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-200" disabled>
+                        <i class="fas fa-play mr-2"></i>執行工作流
+                    </button>
+                    <button id="save-workflow" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded transition duration-200" disabled>
+                        <i class="fas fa-save mr-2"></i>保存工作流
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 實時監控圖表 -->
+        <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+                        <i class="fas fa-chart-line text-green-500 mr-2"></i>
+                        Token節省趨勢
+                    </h3>
+                    <canvas id="token-chart" width="400" height="200"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+                        <i class="fas fa-chart-pie text-orange-500 mr-2"></i>
+                        介入成功率
+                    </h3>
+                    <canvas id="intervention-chart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // WebSocket連接
+        const socket = io();
+        
+        // 全局變量
+        let isRecording = false;
+        let currentWorkflow = null;
+        let recordedActions = [];
+        
+        // DOM元素
+        const startRecordingBtn = document.getElementById('start-recording');
+        const stopRecordingBtn = document.getElementById('stop-recording');
+        const workflowNameInput = document.getElementById('workflow-name');
+        const recordingStatus = document.getElementById('recording-status');
+        const recordedActionsDiv = document.getElementById('recorded-actions');
+        const actionsListDiv = document.getElementById('actions-list');
+        const analyzeBtn = document.getElementById('analyze-conversation');
+        const conversationInput = document.getElementById('conversation-input');
+        const analysisResult = document.getElementById('analysis-result');
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            loadMetrics();
+            setupEventListeners();
+        });
+        
+        // 設置事件監聽器
+        function setupEventListeners() {
+            startRecordingBtn.addEventListener('click', startRecording);
+            stopRecordingBtn.addEventListener('click', stopRecording);
+            analyzeBtn.addEventListener('click', analyzeConversation);
+            
+            // WebSocket事件
+            socket.on('connect', function() {
+                console.log('已連接到PowerAutomation v0.56');
+            });
+            
+            socket.on('recording_started', function(data) {
+                console.log('錄製已開始:', data);
+                updateRecordingUI(true);
+            });
+            
+            socket.on('action_recorded', function(data) {
+                console.log('動作已錄製:', data);
+                addRecordedAction(data);
+            });
+            
+            socket.on('recording_stopped', function(data) {
+                console.log('錄製已停止:', data);
+                updateRecordingUI(false);
+                displayWorkflow(data.workflow);
+            });
+        }
+        
+        // 開始錄製
+        function startRecording() {
+            const workflowName = workflowNameInput.value || `工作流_${Date.now()}`;
+            
+            socket.emit('start_recording', {
+                workflow_name: workflowName
+            });
+            
+            isRecording = true;
+            recordedActions = [];
+            updateRecordingUI(true);
+        }
+        
+        // 停止錄製
+        function stopRecording() {
+            socket.emit('stop_recording');
+            isRecording = false;
+            updateRecordingUI(false);
+        }
+        
+        // 更新錄製UI
+        function updateRecordingUI(recording) {
+            if (recording) {
+                startRecordingBtn.disabled = true;
+                stopRecordingBtn.disabled = false;
+                recordingStatus.classList.remove('hidden');
+                recordedActionsDiv.classList.remove('hidden');
+            } else {
+                startRecordingBtn.disabled = false;
+                stopRecordingBtn.disabled = true;
+                recordingStatus.classList.add('hidden');
+            }
+        }
+        
+        // 添加錄製的動作
+        function addRecordedAction(actionData) {
+            recordedActions.push(actionData);
+            
+            const actionElement = document.createElement('div');
+            actionElement.className = 'text-xs bg-gray-100 rounded px-2 py-1';
+            actionElement.textContent = `${actionData.action_type}: ${actionData.target}`;
+            
+            actionsListDiv.appendChild(actionElement);
+            actionsListDiv.scrollTop = actionsListDiv.scrollHeight;
+        }
+        
+        // 分析對話
+        async function analyzeConversation() {
+            const conversation = conversationInput.value;
+            if (!conversation.trim()) return;
+            
+            try {
+                const response = await fetch('/api/intervention/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ conversation })
+                });
+                
+                const result = await response.json();
+                displayAnalysisResult(result);
+                
+            } catch (error) {
+                console.error('分析失敗:', error);
+            }
+        }
+        
+        // 顯示分析結果
+        function displayAnalysisResult(result) {
+            const interventionNeeded = document.getElementById('intervention-needed');
+            const confidenceScore = document.getElementById('confidence-score');
+            const suggestedAction = document.getElementById('suggested-action');
+            
+            interventionNeeded.innerHTML = `<strong>需要介入:</strong> ${result.intervention_needed ? '是' : '否'}`;
+            confidenceScore.innerHTML = `<strong>信心度:</strong> ${(result.confidence * 100).toFixed(1)}%`;
+            suggestedAction.innerHTML = `<strong>建議動作:</strong> ${result.suggested_action}`;
+            
+            analysisResult.classList.remove('hidden');
+        }
+        
+        // 顯示工作流
+        function displayWorkflow(workflow) {
+            if (!workflow) return;
+            
+            currentWorkflow = workflow;
+            const editor = document.getElementById('workflow-editor');
+            
+            // 清空編輯器
+            editor.innerHTML = '';
+            
+            // 創建工作流可視化
+            const workflowContainer = document.createElement('div');
+            workflowContainer.className = 'workflow-container relative';
+            
+            // 添加節點
+            workflow.steps.forEach((step, index) => {
+                const node = createWorkflowNode(step, index);
+                workflowContainer.appendChild(node);
+            });
+            
+            editor.appendChild(workflowContainer);
+            
+            // 啟用編輯按鈕
+            document.getElementById('edit-workflow').disabled = false;
+            document.getElementById('execute-workflow').disabled = false;
+            document.getElementById('save-workflow').disabled = false;
+        }
+        
+        // 創建工作流節點
+        function createWorkflowNode(step, index) {
+            const node = document.createElement('div');
+            node.className = 'workflow-node inline-block';
+            node.style.left = `${index * 150}px`;
+            node.style.top = '50px';
+            
+            const icon = getActionIcon(step.action_type);
+            
+            node.innerHTML = `
+                <div class="text-center">
+                    <i class="${icon} text-2xl mb-2"></i>
+                    <div class="text-sm font-medium">${step.action_type}</div>
+                    <div class="text-xs text-gray-500">${step.target}</div>
+                </div>
+            `;
+            
+            return node;
+        }
+        
+        // 獲取動作圖標
+        function getActionIcon(actionType) {
+            const icons = {
+                'click': 'fas fa-mouse-pointer text-blue-500',
+                'input': 'fas fa-keyboard text-green-500',
+                'navigate': 'fas fa-compass text-purple-500',
+                'extract': 'fas fa-download text-orange-500'
+            };
+            return icons[actionType] || 'fas fa-cog text-gray-500';
+        }
+        
+        // 加載指標
+        async function loadMetrics() {
+            try {
+                const response = await fetch('/api/metrics');
+                const metrics = await response.json();
+                
+                document.getElementById('total-interventions').textContent = metrics.total_interventions;
+                document.getElementById('successful-workflows').textContent = metrics.successful_workflows;
+                document.getElementById('tokens-saved').textContent = metrics.token_saved;
+                document.getElementById('cost-saved').textContent = `$${metrics.cost_saved.toFixed(2)}`;
+                
+            } catch (error) {
+                console.error('加載指標失敗:', error);
+            }
+        }
+        
+        // 初始化圖表
+        function initializeCharts() {
+            // Token節省趨勢圖
+            const tokenCtx = document.getElementById('token-chart').getContext('2d');
+            new Chart(tokenCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1小時前', '45分鐘前', '30分鐘前', '15分鐘前', '現在'],
+                    datasets: [{
+                        label: 'Token節省',
+                        data: [0, 15, 32, 28, 42],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // 介入成功率圖
+            const interventionCtx = document.getElementById('intervention-chart').getContext('2d');
+            new Chart(interventionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['成功介入', '無需介入', '介入失敗'],
+                    datasets: [{
+                        data: [85, 12, 3],
+                        backgroundColor: ['#10b981', '#6b7280', '#ef4444']
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+        
+        // 定期更新指標
+        setInterval(loadMetrics, 30000); // 每30秒更新一次
+    </script>
+</body>
+</html>
+

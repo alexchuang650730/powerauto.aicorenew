@@ -1,0 +1,101 @@
+[
+  {
+    "id": "rb_20250601193435",
+    "savepoint_id": "sp_test_20250601193435",
+    "timestamp": "20250601193435",
+    "reason": "测试回滚",
+    "status": "success",
+    "before_hash": "test_before_hash",
+    "after_hash": "test_hash_20250601193435",
+    "files_changed": 5,
+    "created_at": "2025-06-01T19:34:35.580645"
+  },
+  {
+    "id": "rb_20250601193442",
+    "savepoint_id": "sp_test_20250601193442",
+    "timestamp": "20250601193442",
+    "reason": "测试回滚",
+    "status": "success",
+    "before_hash": "test_before_hash",
+    "after_hash": "test_hash_20250601193442",
+    "files_changed": 5,
+    "created_at": "2025-06-01T19:34:42.615221"
+  },
+  {
+    "id": "rb_20250601193835",
+    "savepoint_id": "sp_test_20250601193835",
+    "timestamp": "20250601193835",
+    "reason": "测试回滚",
+    "status": "success",
+    "before_hash": "test_before_hash",
+    "after_hash": "test_hash_20250601193835",
+    "files_changed": 5,
+    "created_at": "2025-06-01T19:38:35.724377"
+  },
+  {
+    "id": "rb_20250601193844",
+    "savepoint_id": "sp_test_20250601193844",
+    "timestamp": "20250601193844",
+    "reason": "测试回滚",
+    "status": "success",
+    "before_hash": "test_before_hash",
+    "after_hash": "test_hash_20250601193844",
+    "files_changed": 5,
+    "created_at": "2025-06-01T19:38:44.765962"
+  },
+  {
+    "id": "rb_20250601194134",
+    "savepoint_id": "sp_test_20250601194134",
+    "timestamp": "20250601194134",
+    "reason": "测试回滚",
+    "status": "success",
+    "before_hash": "test_before_hash",
+    "after_hash": "test_hash_20250601194134",
+    "files_changed": 5,
+    "created_at": "2025-06-01T19:41:34.455181"
+  },
+  {
+    "id": "rb_20250601194143",
+    "savepoint_id": "sp_test_20250601194143",
+    "timestamp": "20250601194143",
+    "reason": "测试回滚",
+    "status": "success",
+    "before_hash": "test_before_hash",
+    "after_hash": "test_hash_20250601194143",
+    "files_changed": 5,
+    "created_at": "2025-06-01T19:41:43.463706"
+  },
+  {
+    "id": "rb_20250601194438",
+    "savepoint_id": "sp_test_20250601194438",
+    "timestamp": "20250601194438",
+    "reason": "测试回滚",
+    "status": "success",
+    "before_hash": "test_before_hash",
+    "after_hash": "test_hash_20250601194438",
+    "files_changed": 5,
+    "created_at": "2025-06-01T19:44:38.563577"
+  },
+  {
+    "id": "rb_20250601194447",
+    "savepoint_id": "sp_test_20250601194447",
+    "timestamp": "20250601194447",
+    "reason": "测试回滚",
+    "status": "success",
+    "before_hash": "test_before_hash",
+    "after_hash": "test_hash_20250601194447",
+    "files_changed": 5,
+    "created_at": "2025-06-01T19:44:47.572740"
+  },
+  {
+    "id": "rb_20250605064935",
+    "savepoint_id": "sp_test_rollback_20250605064932",
+    "timestamp": "20250605064935",
+    "reason": "CLI功能測試",
+    "status": "success",
+    "before_hash": "test_before_hash",
+    "after_hash": "test_hash_20250605064935",
+    "files_changed": 5,
+    "created_at": "2025-06-05T06:49:35.725494"
+  }
+]

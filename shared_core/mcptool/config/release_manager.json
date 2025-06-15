@@ -1,0 +1,14 @@
+{
+  "github_repo": "alexchuang650730/Powerauto.ai",
+  "github_token": "",
+  "auto_check_interval": 300,
+  "auto_deploy": true,
+  "local_deploy_path": "/tmp/powerauto_releases",
+  "ssh_key_path": "~/.ssh/id_rsa",
+  "notification_webhook": "",
+  "supported_platforms": ["linux", "macos", "windows"],
+  "release_filters": {
+    "include_prereleases": true,
+    "minimum_version": "v0.1.0"
+  }
+}

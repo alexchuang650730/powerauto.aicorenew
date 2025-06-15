@@ -1,0 +1,19 @@
+powerautomation:
+  components:
+    data_collection:
+      interaction_log:
+        enabled: true
+        storage_path: /home/ubuntu/Powerauto.ai/data/interactions
+      manus:
+        enabled: true
+        endpoint: https://manus.im/app/nptXUzLrh5iY8da4BoBnt9
+    learning:
+      rl_srt:
+        enabled: true
+        learning_rate: 0.001
+        mode: asynchronous
+    tools:
+      kilocode:
+        enabled: true
+        template_path: /home/ubuntu/Powerauto.ai/templates/kilocode
+  version: '0.53'

@@ -28,7 +28,8 @@ from dataclasses import dataclass, asdict, field
 from enum import Enum
 
 # 导入现有组件
-from .powerauto_test_generator import PowerAutoTestGenerator, PowerAutoTestCase, PowerAutoTestType
+# 移除测试相关导入
+# from .powerauto_test_generator import PowerAutoTestGenerator, PowerAutoTestCase, PowerAutoTestType
 from .dialog_classifier import DialogClassifier, DialogType
 from .mcp_coordinator import MCPCoordinator
 

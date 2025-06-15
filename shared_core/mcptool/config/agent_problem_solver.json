@@ -1,0 +1,6 @@
+{
+  "auto_savepoint": true,
+  "auto_savepoint_interval": 3600,
+  "max_savepoints": 10,
+  "auto_rollback_on_failure": false
+}

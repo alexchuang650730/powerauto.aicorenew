@@ -1,0 +1,50 @@
+[
+  {
+    "id": "sp_測試保存點_20250605120527",
+    "timestamp": "20250605120527",
+    "description": "測試保存點",
+    "created_at": "2025-06-05T12:05:27.794509",
+    "project_hash": "b5da4d7915ab49e9243e005c34e95b4c",
+    "auto_created": false,
+    "project_state": {
+      "total_py_files": 96,
+      "total_json_files": 7,
+      "total_md_files": 0,
+      "last_modified": 1749137330.4878938,
+      "total_size": 1494438,
+      "capture_time": "2025-06-05T12:05:27.798364"
+    }
+  },
+  {
+    "id": "sp_Auto test savepoint_20250605124128",
+    "timestamp": "20250605124128",
+    "description": "Auto test savepoint",
+    "created_at": "2025-06-05T12:41:29.040190",
+    "project_hash": "a5b2218c9f379d6eecc8d82b8c28261c",
+    "auto_created": false,
+    "project_state": {
+      "total_py_files": 98,
+      "total_json_files": 8,
+      "total_md_files": 0,
+      "last_modified": 1749137330.4878938,
+      "total_size": 1553037,
+      "capture_time": "2025-06-05T12:41:29.044583"
+    }
+  },
+  {
+    "id": "sp_Auto test savepoint_20250605124130",
+    "timestamp": "20250605124130",
+    "description": "Auto test savepoint",
+    "created_at": "2025-06-05T12:41:30.666102",
+    "project_hash": "a5b2218c9f379d6eecc8d82b8c28261c",
+    "auto_created": false,
+    "project_state": {
+      "total_py_files": 98,
+      "total_json_files": 8,
+      "total_md_files": 0,
+      "last_modified": 1749137330.4878938,
+      "total_size": 1553037,
+      "capture_time": "2025-06-05T12:41:30.670387"
+    }
+  }
+]

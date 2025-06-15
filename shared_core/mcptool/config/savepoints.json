@@ -1,0 +1,106 @@
+[
+  {
+    "id": "sp_20250601193437",
+    "timestamp": "20250601193437",
+    "description": "Release v1.0.0-test \u6d4b\u8bd5\u901a\u8fc7",
+    "project_hash": "test_hash_20250601193437",
+    "path": "/home/ubuntu/powerautomation/.savepoints/sp_20250601193437",
+    "test_status": "success",
+    "deployment_status": "pending",
+    "created_at": "2025-06-01T19:34:37.106603",
+    "tags": [
+      "test"
+    ]
+  },
+  {
+    "id": "sp_20250601193444",
+    "timestamp": "20250601193444",
+    "description": "Release v1.0.0-test \u6d4b\u8bd5\u901a\u8fc7",
+    "project_hash": "test_hash_20250601193444",
+    "path": "/home/ubuntu/powerautomation/.savepoints/sp_20250601193444",
+    "test_status": "success",
+    "deployment_status": "pending",
+    "created_at": "2025-06-01T19:34:44.116907",
+    "tags": [
+      "test"
+    ]
+  },
+  {
+    "id": "sp_20250601193837",
+    "timestamp": "20250601193837",
+    "description": "Release v1.0.0-test \u6d4b\u8bd5\u901a\u8fc7",
+    "project_hash": "test_hash_20250601193837",
+    "path": "/home/ubuntu/powerautomation/.savepoints/sp_20250601193837",
+    "test_status": "success",
+    "deployment_status": "pending",
+    "created_at": "2025-06-01T19:38:37.755901",
+    "tags": [
+      "test"
+    ]
+  },
+  {
+    "id": "sp_20250601193846",
+    "timestamp": "20250601193846",
+    "description": "Release v1.0.0-test \u6d4b\u8bd5\u901a\u8fc7",
+    "project_hash": "test_hash_20250601193846",
+    "path": "/home/ubuntu/powerautomation/.savepoints/sp_20250601193846",
+    "test_status": "success",
+    "deployment_status": "pending",
+    "created_at": "2025-06-01T19:38:46.768151",
+    "tags": [
+      "test"
+    ]
+  },
+  {
+    "id": "sp_20250601194136",
+    "timestamp": "20250601194136",
+    "description": "Release v1.0.0-test \u6d4b\u8bd5\u901a\u8fc7",
+    "project_hash": "test_hash_20250601194136",
+    "path": "/home/ubuntu/powerautomation/.savepoints/sp_20250601194136",
+    "test_status": "success",
+    "deployment_status": "pending",
+    "created_at": "2025-06-01T19:41:36.458864",
+    "tags": [
+      "test"
+    ]
+  },
+  {
+    "id": "sp_20250601194145",
+    "timestamp": "20250601194145",
+    "description": "Release v1.0.0-test \u6d4b\u8bd5\u901a\u8fc7",
+    "project_hash": "test_hash_20250601194145",
+    "path": "/home/ubuntu/powerautomation/.savepoints/sp_20250601194145",
+    "test_status": "success",
+    "deployment_status": "pending",
+    "created_at": "2025-06-01T19:41:45.465704",
+    "tags": [
+      "test"
+    ]
+  },
+  {
+    "id": "sp_20250601194440",
+    "timestamp": "20250601194440",
+    "description": "Release v1.0.0-test \u6d4b\u8bd5\u901a\u8fc7",
+    "project_hash": "test_hash_20250601194440",
+    "path": "/home/ubuntu/powerautomation/.savepoints/sp_20250601194440",
+    "test_status": "success",
+    "deployment_status": "pending",
+    "created_at": "2025-06-01T19:44:40.566831",
+    "tags": [
+      "test"
+    ]
+  },
+  {
+    "id": "sp_20250601194449",
+    "timestamp": "20250601194449",
+    "description": "Release v1.0.0-test \u6d4b\u8bd5\u901a\u8fc7",
+    "project_hash": "test_hash_20250601194449",
+    "path": "/home/ubuntu/powerautomation/.savepoints/sp_20250601194449",
+    "test_status": "success",
+    "deployment_status": "pending",
+    "created_at": "2025-06-01T19:44:49.574584",
+    "tags": [
+      "test"
+    ]
+  }
+]

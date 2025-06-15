@@ -1,0 +1,6 @@
+{
+  "github_repo": "example/repo",
+  "github_token": "",
+  "auto_check_interval": 3600,
+  "auto_deploy": false
+}
