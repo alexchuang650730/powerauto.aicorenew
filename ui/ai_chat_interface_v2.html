@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerAutomation AI对话智能介入系统 v0.2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            color: #1f2937;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            background: #ffffff;
+        }
+
+        /* 左侧状态面板 - 缩小以突出对话区 */
+        .status-panel {
+            width: 280px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-right: 1px solid #e2e8f0;
+            padding: 16px;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+
+        .status-panel-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .status-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-left: 8px;
+        }
+
+        .status-section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            background: white;
+            border-radius: 6px;
+            border-left: 3px solid #3b82f6;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .status-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .status-positive {
+            color: #059669;
+        }
+
+        .status-warning {
+            color: #d97706;
+        }
+
+        .quick-actions {
+            margin-bottom: 20px;
+        }
+
+        .action-button {
+            width: 100%;
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            background: #3b82f6;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-button:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .action-button.secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .action-button.secondary:hover {
+            background: #e5e7eb;
+        }
+
+        /* 主对话区域 - 扩大以成为界面焦点 */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            position: relative;
+        }
+
+        .chat-header {
+            padding: 20px 24px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+
+        .chat-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-title h1 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .ai-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* 对话消息区域 */
+        .chat-messages {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 85%;
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .message.assistant .message-avatar {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .message-content {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            color: #1f2937;
+            border: 1px solid #e2e8f0;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 8px;
+            text-align: right;
+        }
+
+        .message.user .message-time {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* 智能建议卡片 */
+        .suggestion-card {
+            background: linear-gradient(135deg, #f0fdf4, #ffffff);
+            border: 2px solid #10b981;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 12px;
+            position: relative;
+        }
+
+        .suggestion-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .suggestion-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+
+        .suggestion-title {
+            font-weight: 600;
+            color: #065f46;
+            font-size: 16px;
+        }
+
+        .suggestion-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .suggestion-item:hover {
+            background: #f8fafc;
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        }
+
+        .suggestion-number {
+            width: 24px;
+            height: 24px;
+            background: #3b82f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .suggestion-text {
+            flex: 1;
+        }
+
+        .suggestion-action {
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        .suggestion-desc {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        /* 输入区域 */
+        .chat-input-area {
+            padding: 24px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .input-container {
+            position: relative;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .input-container:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 16px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 16px;
+            color: #1f2937;
+            font-size: 16px;
+            resize: none;
+            min-height: 60px;
+            max-height: 200px;
+            line-height: 1.5;
+        }
+
+        .chat-input:focus {
+            outline: none;
+        }
+
+        .chat-input::placeholder {
+            color: #9ca3af;
+        }
+
+        .input-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .input-tools {
+            display: flex;
+            gap: 8px;
+        }
+
+        .input-tool {
+            padding: 6px 12px;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 6px;
+            color: #6b7280;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .input-tool:hover {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .send-button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .send-button:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .send-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 右侧上下文面板 */
+        .context-panel {
+            width: 320px;
+            background: #f8fafc;
+            border-left: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .context-header {
+            padding: 16px 20px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .context-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .context-content {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .context-section {
+            margin-bottom: 20px;
+        }
+
+        .context-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .context-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #e2e8f0;
+            font-size: 12px;
+        }
+
+        .context-item-title {
+            font-weight: 500;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .context-item-desc {
+            color: #6b7280;
+        }
+
+        /* 工作流可视化 */
+        .workflow-visual {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .workflow-nodes {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .workflow-node {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #e2e8f0, #f1f5f9);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-size: 14px;
+            position: relative;
+        }
+
+        .workflow-node.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .workflow-node.completed {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .workflow-arrow {
+            color: #d1d5db;
+            font-size: 12px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .status-panel {
+                width: 240px;
+            }
+            .context-panel {
+                width: 280px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .status-panel {
+                width: 200px;
+            }
+            .context-panel {
+                width: 240px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .status-panel, .context-panel {
+                width: 100%;
+                height: auto;
+                max-height: 200px;
+            }
+            .chat-main {
+                flex: 1;
+                min-height: 400px;
+            }
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* 加载动画 */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 16px 20px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #9ca3af;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.5;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧状态面板 -->
+        <div class="status-panel">
+            <div class="status-panel-header">
+                <span>🤖</span>
+                <div class="status-title">系统状态</div>
+            </div>
+
+            <!-- MCP协调器状态 -->
+            <div class="status-section">
+                <div class="section-title">🧠 MCP协调器</div>
+                <div class="status-item">
+                    <span class="status-label">运行状态</span>
+                    <span class="status-value status-positive">正常</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">响应时间</span>
+                    <span class="status-value">1.2s</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">介入成功率</span>
+                    <span class="status-value status-positive">94.7%</span>
+                </div>
+            </div>
+
+            <!-- 智能介入统计 -->
+            <div class="status-section">
+                <div class="section-title">📊 今日统计</div>
+                <div class="status-item">
+                    <span class="status-label">智能建议</span>
+                    <span class="status-value status-positive">47</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">代码优化</span>
+                    <span class="status-value status-positive">23</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">测试生成</span>
+                    <span class="status-value">12</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">节省时间</span>
+                    <span class="status-value status-positive">3.2h</span>
+                </div>
+            </div>
+
+            <!-- 快速操作 -->
+            <div class="quick-actions">
+                <div class="section-title">🚀 快速操作</div>
+                <button class="action-button" onclick="quickAction('optimize')">
+                    🔧 代码优化
+                </button>
+                <button class="action-button secondary" onclick="quickAction('test')">
+                    🧪 生成测试
+                </button>
+                <button class="action-button secondary" onclick="quickAction('deploy')">
+                    🚀 部署建议
+                </button>
+                <button class="action-button secondary" onclick="quickAction('workflow')">
+                    📋 工作流录制
+                </button>
+            </div>
+
+            <!-- 最近活动 -->
+            <div class="status-section">
+                <div class="section-title">📋 最近活动</div>
+                <div class="status-item">
+                    <span class="status-label">mcp_coordinator.py</span>
+                    <span class="status-value status-positive">已优化</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">test_cases.py</span>
+                    <span class="status-value status-warning">生成中</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">workflow_engine.py</span>
+                    <span class="status-value status-positive">已完成</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主对话区域 -->
+        <div class="chat-main">
+            <div class="chat-header">
+                <div class="chat-title">
+                    <span>🧠</span>
+                    <h1>PowerAutomation AI智能介入助手</h1>
+                </div>
+                <div class="ai-status">
+                    <div class="status-dot"></div>
+                    <span>AI助手在线</span>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <!-- 欢迎消息 -->
+                <div class="message assistant">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <div>您好！我是PowerAutomation智能介入助手。我可以帮您：</div>
+                        
+                        <div class="suggestion-card">
+                            <div class="suggestion-header">
+                                <div class="suggestion-icon">💡</div>
+                                <div class="suggestion-title">我能为您做什么？</div>
+                            </div>
+                            <div class="suggestion-list">
+                                <div class="suggestion-item" onclick="sendMessage('帮我优化当前的代码结构')">
+                                    <div class="suggestion-number">1</div>
+                                    <div class="suggestion-text">
+                                        <div class="suggestion-action">代码优化与重构</div>
+                                        <div class="suggestion-desc">分析代码质量，提供优化建议</div>
+                                    </div>
+                                </div>
+                                <div class="suggestion-item" onclick="sendMessage('为我的项目生成完整的测试用例')">
+                                    <div class="suggestion-number">2</div>
+                                    <div class="suggestion-text">
+                                        <div class="suggestion-action">智能测试生成</div>
+                                        <div class="suggestion-desc">自动生成高质量测试用例</div>
+                                    </div>
+                                </div>
+                                <div class="suggestion-item" onclick="sendMessage('帮我录制并优化工作流程')">
+                                    <div class="suggestion-number">3</div>
+                                    <div class="suggestion-text">
+                                        <div class="suggestion-action">工作流录制与优化</div>
+                                        <div class="suggestion-desc">一键录制，生成n8n工作流</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="message-time">刚刚</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <div class="input-container">
+                    <textarea 
+                        class="chat-input" 
+                        id="chatInput" 
+                        placeholder="描述您的需求，比如：'帮我优化这段代码的性能' 或 '为这个函数生成单元测试'..."
+                        rows="3"></textarea>
+                    <div class="input-actions">
+                        <div class="input-tools">
+                            <button class="input-tool" onclick="attachFile()">📎 附加文件</button>
+                            <button class="input-tool" onclick="attachCode()">💻 附加代码</button>
+                            <button class="input-tool" onclick="attachContext()">📋 附加上下文</button>
+                        </div>
+                        <button class="send-button" id="sendButton" onclick="sendMessage()">
+                            <span>发送</span>
+                            <span>⚡</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧上下文面板 -->
+        <div class="context-panel">
+            <div class="context-header">
+                <div class="context-title">📋 上下文信息</div>
+            </div>
+            
+            <div class="context-content">
+                <!-- 当前工作流 -->
+                <div class="context-section">
+                    <div class="context-section-title">🔄 当前工作流</div>
+                    <div class="workflow-visual">
+                        <div class="workflow-nodes">
+                            <div class="workflow-node completed">📝</div>
+                            <div class="workflow-arrow">→</div>
+                            <div class="workflow-node active">🧪</div>
+                            <div class="workflow-arrow">→</div>
+                            <div class="workflow-node">🚀</div>
+                        </div>
+                        <div style="text-align: center; margin-top: 8px; font-size: 10px; color: #6b7280;">
+                            编码 → 测试 → 部署
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 当前文件 -->
+                <div class="context-section">
+                    <div class="context-section-title">📄 当前文件</div>
+                    <div class="context-item">
+                        <div class="context-item-title">mcp_coordinator.py</div>
+                        <div class="context-item-desc">智能介入协调器 • 656行 • Python</div>
+                    </div>
+                    <div class="context-item">
+                        <div class="context-item-title">workflow_engine.py</div>
+                        <div class="context-item-desc">工作流引擎 • 423行 • Python</div>
+                    </div>
+                </div>
+
+                <!-- 项目信息 -->
+                <div class="context-section">
+                    <div class="context-section-title">📦 项目信息</div>
+                    <div class="context-item">
+                        <div class="context-item-title">PowerAutomation v0.2</div>
+                        <div class="context-item-desc">智能介入系统 • Python 3.11</div>
+                    </div>
+                    <div class="context-item">
+                        <div class="context-item-title">技术栈</div>
+                        <div class="context-item-desc">asyncio, MCP, n8n, Playwright</div>
+                    </div>
+                </div>
+
+                <!-- 最近建议 -->
+                <div class="context-section">
+                    <div class="context-section-title">💡 最近建议</div>
+                    <div class="context-item">
+                        <div class="context-item-title">代码优化</div>
+                        <div class="context-item-desc">建议使用工厂模式重构MCP创建逻辑</div>
+                    </div>
+                    <div class="context-item">
+                        <div class="context-item-title">测试覆盖</div>
+                        <div class="context-item-desc">增加异步函数的单元测试</div>
+                    </div>
+                    <div class="context-item">
+                        <div class="context-item-title">性能优化</div>
+                        <div class="context-item-desc">优化MCP调用的并发处理</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let conversationHistory = [];
+        let isAITyping = false;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatInput = document.getElementById('chatInput');
+            const sendButton = document.getElementById('sendButton');
+
+            // 输入框事件
+            chatInput.addEventListener('input', function() {
+                sendButton.disabled = !this.value.trim();
+            });
+
+            chatInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // 自动调整输入框高度
+            chatInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+            });
+        });
+
+        // 发送消息
+        function sendMessage(predefinedMessage = null) {
+            const chatInput = document.getElementById('chatInput');
+            const message = predefinedMessage || chatInput.value.trim();
+            
+            if (!message || isAITyping) return;
+
+            // 添加用户消息
+            addMessage('user', message);
+            
+            // 清空输入框
+            if (!predefinedMessage) {
+                chatInput.value = '';
+                chatInput.style.height = 'auto';
+            }
+
+            // 显示AI正在输入
+            showTypingIndicator();
+
+            // 模拟AI响应
+            setTimeout(() => {
+                hideTypingIndicator();
+                handleAIResponse(message);
+            }, 1500 + Math.random() * 1000);
+        }
+
+        // 添加消息到对话区
+        function addMessage(sender, content, isHTML = false) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+
+            const avatar = sender === 'user' ? '👤' : '🤖';
+            const time = new Date().toLocaleTimeString('zh-TW', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-content">
+                    ${isHTML ? content : `<div>${content}</div>`}
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // 保存到对话历史
+            conversationHistory.push({
+                sender,
+                content,
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        // 显示输入指示器
+        function showTypingIndicator() {
+            isAITyping = true;
+            const chatMessages = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message assistant';
+            typingDiv.id = 'typing-indicator';
+            
+            typingDiv.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // 隐藏输入指示器
+        function hideTypingIndicator() {
+            isAITyping = false;
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        // 处理AI响应
+        function handleAIResponse(userMessage) {
+            let response = '';
+            let suggestions = [];
+
+            // 根据用户消息生成智能响应
+            if (userMessage.includes('优化') || userMessage.includes('代码')) {
+                response = '我已经分析了您的代码，发现了几个可以优化的地方：';
+                suggestions = [
+                    {
+                        number: 1,
+                        action: '重构MCP注册逻辑',
+                        desc: '使用工厂模式简化MCP实例化过程',
+                        code: 'apply_refactor_mcp_registry'
+                    },
+                    {
+                        number: 2,
+                        action: '优化异步处理',
+                        desc: '改进asyncio任务的并发管理',
+                        code: 'optimize_async_handling'
+                    },
+                    {
+                        number: 3,
+                        action: '添加错误处理',
+                        desc: '增强异常捕获和恢复机制',
+                        code: 'enhance_error_handling'
+                    }
+                ];
+            } else if (userMessage.includes('测试')) {
+                response = '我为您的项目生成了完整的测试用例：';
+                suggestions = [
+                    {
+                        number: 1,
+                        action: '单元测试套件',
+                        desc: '为所有核心函数生成单元测试',
+                        code: 'generate_unit_tests'
+                    },
+                    {
+                        number: 2,
+                        action: '集成测试',
+                        desc: '测试MCP协调器的完整工作流',
+                        code: 'generate_integration_tests'
+                    },
+                    {
+                        number: 3,
+                        action: '性能测试',
+                        desc: '验证系统在高负载下的表现',
+                        code: 'generate_performance_tests'
+                    }
+                ];
+            } else if (userMessage.includes('工作流') || userMessage.includes('录制')) {
+                response = '我已经为您录制了当前的工作流程，并生成了n8n格式的可视化流程：';
+                suggestions = [
+                    {
+                        number: 1,
+                        action: '导出n8n工作流',
+                        desc: '生成标准n8n JSON格式文件',
+                        code: 'export_n8n_workflow'
+                    },
+                    {
+                        number: 2,
+                        action: '优化流程节点',
+                        desc: '简化冗余步骤，提升执行效率',
+                        code: 'optimize_workflow_nodes'
+                    },
+                    {
+                        number: 3,
+                        action: '添加错误处理节点',
+                        desc: '增加异常处理和重试机制',
+                        code: 'add_error_handling_nodes'
+                    }
+                ];
+            } else {
+                response = '我理解您的需求。基于当前的项目上下文，我建议：';
+                suggestions = [
+                    {
+                        number: 1,
+                        action: '分析项目结构',
+                        desc: '深入了解您的具体需求',
+                        code: 'analyze_project_structure'
+                    },
+                    {
+                        number: 2,
+                        action: '提供定制建议',
+                        desc: '根据分析结果给出针对性建议',
+                        code: 'provide_custom_suggestions'
+                    }
+                ];
+            }
+
+            // 生成建议卡片HTML
+            const suggestionHTML = `
+                <div>${response}</div>
+                <div class="suggestion-card">
+                    <div class="suggestion-header">
+                        <div class="suggestion-icon">⚡</div>
+                        <div class="suggestion-title">一步直达建议</div>
+                    </div>
+                    <div class="suggestion-list">
+                        ${suggestions.map(suggestion => `
+                            <div class="suggestion-item" onclick="applySuggestion('${suggestion.code}')">
+                                <div class="suggestion-number">${suggestion.number}</div>
+                                <div class="suggestion-text">
+                                    <div class="suggestion-action">${suggestion.action}</div>
+                                    <div class="suggestion-desc">${suggestion.desc}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            addMessage('assistant', suggestionHTML, true);
+        }
+
+        // 应用建议
+        function applySuggestion(suggestionCode) {
+            console.log('应用建议:', suggestionCode);
+            
+            // 显示应用中状态
+            addMessage('assistant', `正在应用建议: ${suggestionCode}...`);
+            
+            // 模拟应用过程
+            setTimeout(() => {
+                addMessage('assistant', `✅ 建议已成功应用！相关文件已更新，您可以查看具体的修改内容。`);
+                
+                // 更新状态面板
+                updateStatusPanel();
+            }, 2000);
+        }
+
+        // 快速操作
+        function quickAction(action) {
+            const actions = {
+                'optimize': '帮我优化当前的代码结构和性能',
+                'test': '为我的项目生成完整的测试用例',
+                'deploy': '提供部署相关的建议和配置',
+                'workflow': '帮我录制并优化当前的工作流程'
+            };
+            
+            sendMessage(actions[action]);
+        }
+
+        // 附加文件
+        function attachFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.multiple = true;
+            input.accept = '.py,.js,.html,.css,.json,.md';
+            
+            input.onchange = function(e) {
+                const files = Array.from(e.target.files);
+                const fileNames = files.map(f => f.name).join(', ');
+                addMessage('user', `📎 已附加文件: ${fileNames}`);
+                
+                // 模拟文件分析
+                setTimeout(() => {
+                    addMessage('assistant', `我已经分析了您附加的文件。基于文件内容，我可以为您提供针对性的建议。`);
+                }, 1000);
+            };
+            
+            input.click();
+        }
+
+        // 附加代码
+        function attachCode() {
+            const code = prompt('请粘贴您需要分析的代码:');
+            if (code) {
+                addMessage('user', `💻 已附加代码片段:\n\`\`\`\n${code.substring(0, 200)}${code.length > 200 ? '...' : ''}\n\`\`\``);
+                
+                setTimeout(() => {
+                    addMessage('assistant', '我已经分析了您的代码片段。让我为您提供优化建议...');
+                }, 1000);
+            }
+        }
+
+        // 附加上下文
+        function attachContext() {
+            const context = prompt('请描述当前的项目背景或具体需求:');
+            if (context) {
+                addMessage('user', `📋 项目上下文: ${context}`);
+                
+                setTimeout(() => {
+                    addMessage('assistant', '感谢您提供的上下文信息。这将帮助我为您提供更精准的建议。');
+                }, 1000);
+            }
+        }
+
+        // 更新状态面板
+        function updateStatusPanel() {
+            // 这里可以添加实时更新状态面板的逻辑
+            console.log('状态面板已更新');
+        }
+
+        // 模拟实时状态更新
+        setInterval(() => {
+            // 更新响应时间
+            const responseTimeElements = document.querySelectorAll('.status-item .status-value');
+            if (responseTimeElements[1]) {
+                const randomTime = (0.8 + Math.random() * 0.8).toFixed(1);
+                responseTimeElements[1].textContent = randomTime + 's';
+            }
+        }, 5000);
+    </script>
+</body>
+</html>
+

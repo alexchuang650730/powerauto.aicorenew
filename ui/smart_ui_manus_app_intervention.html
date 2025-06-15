@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerAutomation 智慧UI - Manus & 应用双重介入系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            color: #1f2937;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .smart-ui-container {
+            display: flex;
+            height: 100vh;
+            background: #ffffff;
+        }
+
+        /* 左侧状态面板 - 280px */
+        .status-panel {
+            width: 280px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-right: 1px solid #e2e8f0;
+            padding: 16px;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+
+        .status-panel-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .status-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-left: 8px;
+        }
+
+        /* 介入状态卡片 */
+        .intervention-status {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .intervention-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .intervention-type {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .manus-intervention {
+            color: #3b82f6;
+        }
+
+        .app-intervention {
+            color: #10b981;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-active {
+            background: #10b981;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+        }
+
+        .status-idle {
+            background: #6b7280;
+        }
+
+        .status-error {
+            background: #ef4444;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+        }
+
+        /* 中间AI对话区域 - flex:1 */
+        .ai-chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            position: relative;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .ai-status {
+            display: flex;
+            align-items: center;
+        }
+
+        .ai-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 16px;
+        }
+
+        .ai-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .ai-info p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .intervention-mode {
+            display: flex;
+            gap: 8px;
+        }
+
+        .mode-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 对话消息区域 */
+        .chat-messages {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            background: #fafafa;
+        }
+
+        .message {
+            margin-bottom: 24px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 12px;
+        }
+
+        .message.ai .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.user .message-avatar {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .message-content {
+            max-width: 70%;
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+
+        /* 智能建议卡片 */
+        .smart-suggestions {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+
+        .suggestions-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0369a1;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .suggestion-card {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border: 1px solid #e0f2fe;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .suggestion-card:hover {
+            background: #f0f9ff;
+            border-color: #0ea5e9;
+            transform: translateY(-1px);
+        }
+
+        .suggestion-text {
+            font-size: 13px;
+            color: #0369a1;
+            font-weight: 500;
+        }
+
+        .suggestion-action {
+            font-size: 11px;
+            color: #0ea5e9;
+            background: #e0f2fe;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        /* 输入区域 */
+        .chat-input-area {
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            padding: 16px 24px;
+        }
+
+        .input-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            background: #f9fafb;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            padding: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .input-container:focus-within {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .chat-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: none;
+            min-height: 20px;
+            max-height: 120px;
+        }
+
+        .input-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .intervention-toggle {
+            display: flex;
+            gap: 4px;
+        }
+
+        .toggle-btn {
+            padding: 6px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 右侧上下文面板 - 320px */
+        .context-panel {
+            width: 320px;
+            background: linear-gradient(135deg, #fefefe 0%, #f8fafc 100%);
+            border-left: 1px solid #e2e8f0;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .context-header {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .context-section {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .context-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .context-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 13px;
+        }
+
+        .context-item:last-child {
+            border-bottom: none;
+        }
+
+        .context-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .context-value {
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .context-panel {
+                width: 280px;
+            }
+            
+            .status-panel {
+                width: 240px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .smart-ui-container {
+                flex-direction: column;
+            }
+            
+            .status-panel,
+            .context-panel {
+                width: 100%;
+                height: auto;
+                max-height: 200px;
+            }
+            
+            .ai-chat-area {
+                flex: 1;
+                min-height: 400px;
+            }
+        }
+
+        /* 动画效果 */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #6b7280;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 2px;
+        }
+
+        .typing-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #6b7280;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* 介入模式指示器 */
+        .intervention-indicator {
+            position: absolute;
+            top: 16px;
+            right: 24px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .mode-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .mode-indicator.manus-active {
+            background: #3b82f6;
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+        }
+
+        .mode-indicator.app-active {
+            background: #10b981;
+            border-color: rgba(16, 185, 129, 0.5);
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="smart-ui-container">
+        <!-- 左侧状态面板 -->
+        <div class="status-panel">
+            <div class="status-panel-header">
+                <div class="status-indicator status-active"></div>
+                <div class="status-title">智能介入状态</div>
+            </div>
+
+            <!-- Manus介入状态 -->
+            <div class="intervention-status">
+                <div class="intervention-header">
+                    <div class="intervention-type manus-intervention">
+                        <div class="status-indicator status-active"></div>
+                        Manus 浏览器介入
+                    </div>
+                    <span style="font-size: 12px; color: #6b7280;">活跃</span>
+                </div>
+                <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    正在监控: GitHub, VS Code Web
+                </div>
+                <div style="font-size: 11px; color: #374151;">
+                    • 自动填写表单<br>
+                    • 代码提交检查<br>
+                    • 工作流协调
+                </div>
+            </div>
+
+            <!-- 应用介入状态 -->
+            <div class="intervention-status">
+                <div class="intervention-header">
+                    <div class="intervention-type app-intervention">
+                        <div class="status-indicator status-idle"></div>
+                        应用程序介入
+                    </div>
+                    <span style="font-size: 12px; color: #6b7280;">待机</span>
+                </div>
+                <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    监控应用: VS Code, Terminal
+                </div>
+                <div style="font-size: 11px; color: #374151;">
+                    • 文件操作自动化<br>
+                    • 系统命令执行<br>
+                    • 跨应用数据同步
+                </div>
+            </div>
+
+            <!-- 系统状态 -->
+            <div class="intervention-status">
+                <div class="intervention-header">
+                    <div class="intervention-type" style="color: #8b5cf6;">
+                        <div class="status-indicator status-active"></div>
+                        系统状态
+                    </div>
+                </div>
+                <div style="font-size: 11px; color: #374151;">
+                    CPU: 15% | 内存: 2.1GB<br>
+                    网络: 正常 | 存储: 85%<br>
+                    AI模型: Qwen 8B 本地运行
+                </div>
+            </div>
+        </div>
+
+        <!-- 中间AI对话区域 -->
+        <div class="ai-chat-area">
+            <div class="chat-header">
+                <div class="ai-status">
+                    <div class="ai-avatar">🤖</div>
+                    <div class="ai-info">
+                        <h3>PowerAutomation AI</h3>
+                        <p>智能介入助手 - 在线</p>
+                    </div>
+                </div>
+                <div class="intervention-mode">
+                    <div class="mode-badge">Manus</div>
+                    <div class="mode-badge">应用</div>
+                </div>
+                <div class="intervention-indicator">
+                    <div class="mode-indicator manus-active" title="Manus介入活跃"></div>
+                    <div class="mode-indicator" title="应用介入待机"></div>
+                </div>
+            </div>
+
+            <div class="chat-messages">
+                <!-- AI消息 -->
+                <div class="message ai">
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content">
+                        <div>您好！我是PowerAutomation智能介入助手。我可以通过Manus进行浏览器自动化，也可以直接介入桌面应用程序。</div>
+                        
+                        <div class="smart-suggestions">
+                            <div class="suggestions-header">
+                                💡 智能建议 - 一步直达
+                            </div>
+                            <div class="suggestion-card" onclick="executeSuggestion('github-commit')">
+                                <div class="suggestion-text">检查GitHub仓库状态并自动提交代码</div>
+                                <div class="suggestion-action">Manus</div>
+                            </div>
+                            <div class="suggestion-card" onclick="executeSuggestion('vscode-format')">
+                                <div class="suggestion-text">格式化VS Code中的所有Python文件</div>
+                                <div class="suggestion-action">应用</div>
+                            </div>
+                            <div class="suggestion-card" onclick="executeSuggestion('deploy-check')">
+                                <div class="suggestion-text">运行部署前的完整检查流程</div>
+                                <div class="suggestion-action">混合</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 用户消息 -->
+                <div class="message user">
+                    <div class="message-avatar">U</div>
+                    <div class="message-content">
+                        帮我检查PowerAutomation项目的代码质量，如果有问题就自动修复
+                    </div>
+                </div>
+
+                <!-- AI回复 -->
+                <div class="message ai">
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content">
+                        <div>好的！我将通过以下步骤为您检查和修复代码质量：</div>
+                        
+                        <div style="margin: 12px 0; padding: 12px; background: #f0f9ff; border-radius: 8px; font-size: 13px;">
+                            <strong>🔍 执行计划：</strong><br>
+                            1. <span style="color: #3b82f6;">[Manus]</span> 打开GitHub仓库检查CI状态<br>
+                            2. <span style="color: #10b981;">[应用]</span> 在VS Code中运行代码质量检查<br>
+                            3. <span style="color: #8b5cf6;">[智能]</span> 分析问题并生成修复建议<br>
+                            4. <span style="color: #f59e0b;">[自动]</span> 执行修复并重新验证
+                        </div>
+
+                        <div class="typing-indicator">
+                            <span>正在执行介入操作</span>
+                            <div class="typing-dots">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <div class="input-container">
+                    <textarea class="chat-input" placeholder="描述您的开发需求，我会智能选择最佳介入方式..." rows="1"></textarea>
+                    <div class="input-actions">
+                        <div class="intervention-toggle">
+                            <button class="toggle-btn active" data-mode="manus">Manus</button>
+                            <button class="toggle-btn active" data-mode="app">应用</button>
+                        </div>
+                        <button class="send-btn">发送</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧上下文面板 -->
+        <div class="context-panel">
+            <div class="context-header">🎯 工作流上下文</div>
+
+            <!-- 当前项目信息 -->
+            <div class="context-section">
+                <div class="context-section-title">📁 当前项目</div>
+                <div class="context-item">
+                    <span class="context-label">项目名称</span>
+                    <span class="context-value">PowerAutomation</span>
+                </div>
+                <div class="context-item">
+                    <span class="context-label">分支</span>
+                    <span class="context-value">main</span>
+                </div>
+                <div class="context-item">
+                    <span class="context-label">最后提交</span>
+                    <span class="context-value">2小时前</span>
+                </div>
+                <div class="context-item">
+                    <span class="context-label">代码质量</span>
+                    <span class="context-value" style="color: #10b981;">92%</span>
+                </div>
+            </div>
+
+            <!-- 活跃工作流 -->
+            <div class="context-section">
+                <div class="context-section-title">⚡ 活跃工作流</div>
+                <div class="context-item">
+                    <span class="context-label">智慧路由MCP</span>
+                    <span class="context-value" style="color: #3b82f6;">运行中</span>
+                </div>
+                <div class="context-item">
+                    <span class="context-label">开发介入</span>
+                    <span class="context-value" style="color: #10b981;">监控中</span>
+                </div>
+                <div class="context-item">
+                    <span class="context-label">质量门禁</span>
+                    <span class="context-value" style="color: #f59e0b;">检查中</span>
+                </div>
+            </div>
+
+            <!-- 介入历史 -->
+            <div class="context-section">
+                <div class="context-section-title">📊 介入历史</div>
+                <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">最近24小时</div>
+                <div class="context-item">
+                    <span class="context-label">Manus介入</span>
+                    <span class="context-value">15次</span>
+                </div>
+                <div class="context-item">
+                    <span class="context-label">应用介入</span>
+                    <span class="context-value">8次</span>
+                </div>
+                <div class="context-item">
+                    <span class="context-label">成功率</span>
+                    <span class="context-value" style="color: #10b981;">96%</span>
+                </div>
+            </div>
+
+            <!-- 系统资源 -->
+            <div class="context-section">
+                <div class="context-section-title">💻 系统资源</div>
+                <div class="context-item">
+                    <span class="context-label">Qwen 8B</span>
+                    <span class="context-value" style="color: #10b981;">在线</span>
+                </div>
+                <div class="context-item">
+                    <span class="context-label">Manus连接</span>
+                    <span class="context-value" style="color: #10b981;">正常</span>
+                </div>
+                <div class="context-item">
+                    <span class="context-label">应用监控</span>
+                    <span class="context-value" style="color: #3b82f6;">活跃</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 智能建议执行
+        function executeSuggestion(action) {
+            const suggestions = {
+                'github-commit': {
+                    text: '正在通过Manus检查GitHub状态...',
+                    mode: 'manus'
+                },
+                'vscode-format': {
+                    text: '正在通过应用介入格式化VS Code文件...',
+                    mode: 'app'
+                },
+                'deploy-check': {
+                    text: '正在执行混合模式部署检查...',
+                    mode: 'hybrid'
+                }
+            };
+
+            const suggestion = suggestions[action];
+            if (suggestion) {
+                addMessage('user', `执行建议: ${action}`);
+                setTimeout(() => {
+                    addMessage('ai', suggestion.text);
+                }, 500);
+            }
+        }
+
+        // 添加消息
+        function addMessage(type, content) {
+            const messagesContainer = document.querySelector('.chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${type === 'ai' ? 'AI' : 'U'}</div>
+                <div class="message-content">
+                    <div>${content}</div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // 介入模式切换
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                updateInterventionMode();
+            });
+        });
+
+        function updateInterventionMode() {
+            const manusActive = document.querySelector('[data-mode="manus"]').classList.contains('active');
+            const appActive = document.querySelector('[data-mode="app"]').classList.contains('active');
+            
+            // 更新指示器
+            const indicators = document.querySelectorAll('.mode-indicator');
+            indicators[0].classList.toggle('manus-active', manusActive);
+            indicators[1].classList.toggle('app-active', appActive);
+        }
+
+        // 发送消息
+        document.querySelector('.send-btn').addEventListener('click', () => {
+            const input = document.querySelector('.chat-input');
+            const message = input.value.trim();
+            
+            if (message) {
+                addMessage('user', message);
+                input.value = '';
+                
+                // 模拟AI回复
+                setTimeout(() => {
+                    addMessage('ai', '收到您的请求，正在分析最佳介入策略...');
+                }, 1000);
+            }
+        });
+
+        // 输入框自动调整高度
+        document.querySelector('.chat-input').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
+        // 回车发送消息
+        document.querySelector('.chat-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.querySelector('.send-btn').click();
+            }
+        });
+
+        // 初始化
+        updateInterventionMode();
+    </script>
+</body>
+</html>
+

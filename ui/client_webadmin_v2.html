@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerAutomation 智慧工作台 v0.2</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            color: #1f2937;
+            line-height: 1.6;
+        }
+
+        /* 主容器 */
+        .container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 側邊欄 */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            color: white;
+            padding: 0;
+            box-shadow: 4px 0 20px rgba(37, 99, 235, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .logo i {
+            font-size: 24px;
+            color: #60a5fa;
+        }
+
+        /* 角色切换器 */
+        .role-switcher {
+            margin-top: 16px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .role-switcher select {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        .nav-menu {
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #60a5fa;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            border-left-color: #ffffff;
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* 智能介入指示器 */
+        .smart-indicator {
+            position: absolute;
+            right: 12px;
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* 主內容區 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 頂部欄 */
+        .header {
+            background: white;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .breadcrumb {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* 智能介入快速按钮 */
+        .smart-intervention-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .smart-intervention-btn:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #f3f4f6;
+            border-radius: 8px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* 內容區域 */
+        .content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            background: #f9fafb;
+        }
+
+        /* 三節點工作流布局 */
+        .workflow-nodes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .workflow-node {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .workflow-node::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2563eb, #3b82f6);
+        }
+
+        .workflow-node:hover {
+            border-color: #2563eb;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.15);
+        }
+
+        .workflow-node.active {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #f0fdf4, #ffffff);
+        }
+
+        .workflow-node.active::before {
+            background: linear-gradient(90deg, #10b981, #059669);
+        }
+
+        .node-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .node-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .node-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2563eb;
+            font-size: 20px;
+        }
+
+        .node-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-ready {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-completed {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* 智能介入面板 */
+        .smart-intervention-panel {
+            background: linear-gradient(135deg, #f0fdf4, #ffffff);
+            border: 2px solid #10b981;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 16px;
+            position: relative;
+        }
+
+        .intervention-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .intervention-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .intervention-title {
+            font-weight: 600;
+            color: #065f46;
+        }
+
+        .intervention-content {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            border-left: 4px solid #10b981;
+        }
+
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .suggestion-item:hover {
+            background: #e2e8f0;
+            transform: translateX(4px);
+        }
+
+        .suggestion-icon {
+            width: 24px;
+            height: 24px;
+            background: #2563eb;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        /* n8n 工作流可视化 */
+        .workflow-visualization {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .workflow-canvas {
+            min-height: 300px;
+            background: #f9fafb;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .workflow-nodes-visual {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .visual-node {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .visual-node:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3);
+        }
+
+        .visual-node::after {
+            content: '';
+            position: absolute;
+            right: -40px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 2px;
+            background: #d1d5db;
+        }
+
+        .visual-node:last-child::after {
+            display: none;
+        }
+
+        .visual-node.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        /* 按鈕樣式 */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        /* 智能介入对话框 */
+        .intervention-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .intervention-dialog.show {
+            display: flex;
+        }
+
+        .dialog-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .dialog-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .dialog-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #6b7280;
+            cursor: pointer;
+        }
+
+        .dialog-body {
+            margin-bottom: 24px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .textarea-field {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* 進度條 */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb, #3b82f6);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* 通知徽章 */
+        .badge {
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            position: absolute;
+            top: -8px;
+            right: -8px;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 60px;
+            }
+
+            .sidebar .nav-item span {
+                display: none;
+            }
+
+            .logo span {
+                display: none;
+            }
+
+            .role-switcher {
+                display: none;
+            }
+
+            .workflow-nodes {
+                grid-template-columns: 1fr;
+            }
+
+            .workflow-nodes-visual {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .visual-node::after {
+                display: none;
+            }
+        }
+
+        /* 動畫效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .workflow-node {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* 实时状态指示器 */
+        .realtime-status {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            min-width: 200px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-dot.green {
+            background: #10b981;
+        }
+
+        .status-dot.yellow {
+            background: #f59e0b;
+        }
+
+        .status-dot.red {
+            background: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 側邊欄 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-brain"></i>
+                    <span>PowerAutomation</span>
+                </div>
+                <!-- 角色切换器 -->
+                <div class="role-switcher">
+                    <label>當前角色:</label>
+                    <select id="role-selector">
+                        <option value="coder">編碼者 (三節點)</option>
+                        <option value="admin">管理員 (六節點)</option>
+                        <option value="architect">架構師 (全功能)</option>
+                    </select>
+                </div>
+            </div>
+            <nav class="nav-menu">
+                <div class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>智慧儀表板</span>
+                    <div class="smart-indicator"></div>
+                </div>
+                <div class="nav-item" data-page="coding">
+                    <i class="fas fa-code"></i>
+                    <span>編碼實現</span>
+                    <div class="badge">3</div>
+                </div>
+                <div class="nav-item" data-page="testing">
+                    <i class="fas fa-vial"></i>
+                    <span>測試驗證</span>
+                    <div class="badge">1</div>
+                    <div class="smart-indicator"></div>
+                </div>
+                <div class="nav-item" data-page="deployment">
+                    <i class="fas fa-rocket"></i>
+                    <span>部署發布</span>
+                </div>
+                <div class="nav-item" data-page="ai-assistant">
+                    <i class="fas fa-robot"></i>
+                    <span>智能介入</span>
+                    <div class="smart-indicator"></div>
+                </div>
+                <div class="nav-item" data-page="workflow">
+                    <i class="fas fa-project-diagram"></i>
+                    <span>工作流可視化</span>
+                </div>
+                <div class="nav-item" data-page="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>系統設置</span>
+                </div>
+            </nav>
+        </div>
+
+        <!-- 主內容區 -->
+        <div class="main-content">
+            <!-- 頂部欄 -->
+            <header class="header">
+                <div class="header-left">
+                    <div class="breadcrumb">
+                        <i class="fas fa-home"></i> 智慧工作台 / 三節點工作流
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button class="smart-intervention-btn" onclick="openInterventionDialog()">
+                        <i class="fas fa-brain"></i>
+                        智能介入
+                    </button>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        新建工作流
+                    </button>
+                    <div class="user-info">
+                        <div class="user-avatar">U</div>
+                        <span>編碼者模式</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 內容區域 -->
+            <main class="content" id="main-content">
+                <!-- 三節點工作流 -->
+                <div class="workflow-nodes">
+                    <!-- 編碼實現節點 -->
+                    <div class="workflow-node" id="coding-node">
+                        <div class="node-header">
+                            <div class="node-title">
+                                <div class="node-icon">
+                                    <i class="fas fa-code"></i>
+                                </div>
+                                <div>
+                                    <div>編碼實現</div>
+                                    <div style="font-size: 14px; color: #6b7280; font-weight: normal;">AI輔助編程</div>
+                                </div>
+                            </div>
+                            <span class="node-status status-active">運行中</span>
+                        </div>
+                        
+                        <div style="margin-bottom: 16px;">
+                            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                                <button class="btn btn-primary" style="flex: 1;">
+                                    <i class="fas fa-play"></i>
+                                    開始編碼
+                                </button>
+                                <button class="btn btn-secondary">
+                                    <i class="fas fa-cog"></i>
+                                </button>
+                            </div>
+                            
+                            <div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">今日進度</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 73%"></div>
+                            </div>
+                            <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">247 行代碼 • AI輔助率 73%</div>
+                        </div>
+
+                        <div style="background: #f8fafc; padding: 12px; border-radius: 8px; font-size: 14px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <i class="fas fa-lightbulb" style="color: #f59e0b;"></i>
+                                <span style="font-weight: 500;">AI建議</span>
+                            </div>
+                            <div style="color: #6b7280;">建議使用設計模式優化當前代碼結構</div>
+                        </div>
+                    </div>
+
+                    <!-- 測試驗證節點 -->
+                    <div class="workflow-node active" id="testing-node">
+                        <div class="node-header">
+                            <div class="node-title">
+                                <div class="node-icon" style="background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #059669;">
+                                    <i class="fas fa-vial"></i>
+                                </div>
+                                <div>
+                                    <div>測試驗證</div>
+                                    <div style="font-size: 14px; color: #6b7280; font-weight: normal;">智能介入引擎</div>
+                                </div>
+                            </div>
+                            <span class="node-status status-active">智能分析中</span>
+                        </div>
+                        
+                        <div style="margin-bottom: 16px;">
+                            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                                <button class="btn btn-success" style="flex: 1;" onclick="openInterventionDialog()">
+                                    <i class="fas fa-brain"></i>
+                                    智能介入
+                                </button>
+                                <button class="btn btn-secondary">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            </div>
+                            
+                            <div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">測試覆蓋率</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 85%; background: linear-gradient(90deg, #10b981, #059669);"></div>
+                            </div>
+                            <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">85.2% 覆蓋率 • 92.5% 通過率</div>
+                        </div>
+
+                        <!-- 智能介入面板 -->
+                        <div class="smart-intervention-panel">
+                            <div class="intervention-header">
+                                <div class="intervention-icon">
+                                    <i class="fas fa-brain"></i>
+                                </div>
+                                <div class="intervention-title">智能介入建議</div>
+                            </div>
+                            <div class="intervention-content">
+                                <div class="suggestion-item" onclick="applySuggestion(1)">
+                                    <div class="suggestion-icon">1</div>
+                                    <div>
+                                        <div style="font-weight: 500;">優化測試用例</div>
+                                        <div style="font-size: 12px; color: #6b7280;">建議增加邊界條件測試</div>
+                                    </div>
+                                </div>
+                                <div class="suggestion-item" onclick="applySuggestion(2)">
+                                    <div class="suggestion-icon">2</div>
+                                    <div>
+                                        <div style="font-weight: 500;">修復潛在問題</div>
+                                        <div style="font-size: 12px; color: #6b7280;">發現3個潛在的記憶體洩漏</div>
+                                    </div>
+                                </div>
+                                <div class="suggestion-item" onclick="applySuggestion(3)">
+                                    <div class="suggestion-icon">3</div>
+                                    <div>
+                                        <div style="font-weight: 500;">性能優化</div>
+                                        <div style="font-size: 12px; color: #6b7280;">可提升響應速度 23%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 部署發布節點 -->
+                    <div class="workflow-node" id="deployment-node">
+                        <div class="node-header">
+                            <div class="node-title">
+                                <div class="node-icon" style="background: linear-gradient(135deg, #fef3c7, #fde68a); color: #d97706;">
+                                    <i class="fas fa-rocket"></i>
+                                </div>
+                                <div>
+                                    <div>部署發布</div>
+                                    <div style="font-size: 14px; color: #6b7280; font-weight: normal;">自動化部署</div>
+                                </div>
+                            </div>
+                            <span class="node-status status-ready">準備就緒</span>
+                        </div>
+                        
+                        <div style="margin-bottom: 16px;">
+                            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                                <button class="btn btn-primary" style="flex: 1;">
+                                    <i class="fas fa-rocket"></i>
+                                    開始部署
+                                </button>
+                                <button class="btn btn-secondary">
+                                    <i class="fas fa-history"></i>
+                                </button>
+                            </div>
+                            
+                            <div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">部署成功率</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 98%; background: linear-gradient(90deg, #d97706, #f59e0b);"></div>
+                            </div>
+                            <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">98.7% 成功率 • 平均 3.2 分鐘</div>
+                        </div>
+
+                        <div style="background: #fef3c7; padding: 12px; border-radius: 8px; font-size: 14px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <i class="fas fa-clock" style="color: #d97706;"></i>
+                                <span style="font-weight: 500;">等待測試完成</span>
+                            </div>
+                            <div style="color: #92400e;">測試通過後將自動觸發部署流程</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- n8n 工作流可視化 -->
+                <div class="workflow-visualization">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                        <h3 style="margin: 0;">工作流可視化</h3>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-download"></i>
+                                導出 n8n
+                            </button>
+                            <button class="btn btn-primary">
+                                <i class="fas fa-edit"></i>
+                                編輯工作流
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-canvas">
+                        <div class="workflow-nodes-visual">
+                            <div class="visual-node active" title="編碼實現">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <div class="visual-node active" title="測試驗證">
+                                <i class="fas fa-vial"></i>
+                            </div>
+                            <div class="visual-node" title="部署發布">
+                                <i class="fas fa-rocket"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 智能介入對話框 -->
+    <div class="intervention-dialog" id="intervention-dialog">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <div class="dialog-title">
+                    <i class="fas fa-brain" style="color: #10b981; margin-right: 12px;"></i>
+                    智能介入助手
+                </div>
+                <button class="close-btn" onclick="closeInterventionDialog()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="dialog-body">
+                <div class="input-group">
+                    <label class="input-label">描述您的需求或問題：</label>
+                    <textarea class="input-field textarea-field" id="user-input" 
+                              placeholder="例如：我需要優化這段代碼的性能，或者幫我生成單元測試..."></textarea>
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">上下文信息：</label>
+                    <input type="text" class="input-field" id="context-input" 
+                           placeholder="當前文件、項目類型、使用的技術棧等...">
+                </div>
+                
+                <div style="background: #f0fdf4; padding: 16px; border-radius: 8px; border-left: 4px solid #10b981;">
+                    <div style="font-weight: 500; color: #065f46; margin-bottom: 8px;">
+                        <i class="fas fa-lightbulb"></i> 智能建議
+                    </div>
+                    <div id="ai-suggestions" style="color: #047857;">
+                        正在分析您的代碼和上下文，準備生成個性化建議...
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeInterventionDialog()">
+                    取消
+                </button>
+                <button class="btn btn-success" onclick="generateSuggestions()">
+                    <i class="fas fa-brain"></i>
+                    生成一步直達建議
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 實時狀態指示器 -->
+    <div class="realtime-status">
+        <div style="font-weight: 600; margin-bottom: 12px; color: #1f2937;">系統狀態</div>
+        <div class="status-item">
+            <div class="status-dot green"></div>
+            <span style="font-size: 14px;">MCP協調器運行中</span>
+        </div>
+        <div class="status-item">
+            <div class="status-dot green"></div>
+            <span style="font-size: 14px;">智能介入引擎就緒</span>
+        </div>
+        <div class="status-item">
+            <div class="status-dot yellow"></div>
+            <span style="font-size: 14px;">測試用例生成中</span>
+        </div>
+    </div>
+
+    <script>
+        // 智能介入對話框控制
+        function openInterventionDialog() {
+            document.getElementById('intervention-dialog').classList.add('show');
+            // 模擬AI分析
+            setTimeout(() => {
+                document.getElementById('ai-suggestions').innerHTML = `
+                    <div style="margin-bottom: 8px;">✅ 檢測到當前代碼可以優化的3個關鍵點</div>
+                    <div style="margin-bottom: 8px;">🧪 建議增加邊界條件測試用例</div>
+                    <div>🚀 可以自動生成部署配置文件</div>
+                `;
+            }, 1500);
+        }
+
+        function closeInterventionDialog() {
+            document.getElementById('intervention-dialog').classList.remove('show');
+        }
+
+        function generateSuggestions() {
+            const userInput = document.getElementById('user-input').value;
+            const contextInput = document.getElementById('context-input').value;
+            
+            if (!userInput.trim()) {
+                alert('請描述您的需求或問題');
+                return;
+            }
+
+            // 模擬生成建議
+            document.getElementById('ai-suggestions').innerHTML = `
+                <div style="margin-bottom: 12px; font-weight: 500;">🎯 一步直達建議：</div>
+                <div style="margin-bottom: 8px;">1. 自動重構代碼結構，提升可讀性</div>
+                <div style="margin-bottom: 8px;">2. 生成完整的單元測試套件</div>
+                <div style="margin-bottom: 8px;">3. 配置CI/CD自動化部署流程</div>
+                <div style="margin-top: 12px; padding: 8px; background: white; border-radius: 4px;">
+                    <strong>預計節省時間：</strong> 2.5 小時<br>
+                    <strong>提升質量：</strong> 代碼覆蓋率 +15%
+                </div>
+            `;
+
+            // 3秒後自動關閉對話框並應用建議
+            setTimeout(() => {
+                closeInterventionDialog();
+                applySuggestion('auto');
+            }, 3000);
+        }
+
+        function applySuggestion(suggestionId) {
+            // 模擬應用建議
+            const testingNode = document.getElementById('testing-node');
+            testingNode.style.background = 'linear-gradient(135deg, #dcfce7, #ffffff)';
+            
+            // 更新進度
+            setTimeout(() => {
+                const progressFill = testingNode.querySelector('.progress-fill');
+                progressFill.style.width = '95%';
+                
+                const statusText = testingNode.querySelector('.node-status');
+                statusText.textContent = '優化完成';
+                statusText.className = 'node-status status-completed';
+            }, 1000);
+
+            console.log('應用建議:', suggestionId);
+        }
+
+        // 角色切換
+        document.getElementById('role-selector').addEventListener('change', function(e) {
+            const role = e.target.value;
+            const userInfo = document.querySelector('.user-info span');
+            
+            switch(role) {
+                case 'coder':
+                    userInfo.textContent = '編碼者模式';
+                    break;
+                case 'admin':
+                    userInfo.textContent = '管理員模式';
+                    break;
+                case 'architect':
+                    userInfo.textContent = '架構師模式';
+                    break;
+            }
+        });
+
+        // 導航切換
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                this.classList.add('active');
+                
+                const page = this.dataset.page;
+                console.log('切換到頁面:', page);
+            });
+        });
+
+        // 模擬實時狀態更新
+        setInterval(() => {
+            const statusDots = document.querySelectorAll('.status-dot');
+            statusDots.forEach(dot => {
+                if (Math.random() > 0.8) {
+                    dot.style.opacity = '0.5';
+                    setTimeout(() => {
+                        dot.style.opacity = '1';
+                    }, 200);
+                }
+            });
+        }, 3000);
+    </script>
+</body>
+</html>
+
